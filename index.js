@@ -31,28 +31,32 @@ let commands = {
       if(!suffix) {
         msg.channel.sendMessage( `!syncdb unlock require a [key] arguments`);
       } else {
-        redis.del(`${suffix}`);
-        msg.channel.sendMessage(`unlock key ${suffix}`);
-      }
+        redis.del(`${suffix}`, (err, reply) => {
+          console.log(reply);
+          msg.channel.sendMessage(`unlock key ${suffix}`);
+        });
     }
   },
   "syncdb" : {
     usage: "[machine]",
     description: "sync database on a given machine",
-    process: function(client,msg,suffix){
-      if(!suffix) {
-        msg.channel.sendMessage( `!syncdb command require a [server] arguments`);
+    process: function (client, msg, suffix) {
+      if (!suffix) {
+        msg.channel.sendMessage(`!syncdb command require a [server] arguments`);
       }
       else {//get args list
-        if(redis.get(`syncdb_${suffix}`)) {
-          msg.channel.sendMessage(`database on machine ${suffix} is already syncing, please wait`);
-        } else {
-          redis.set(`syncdb_${suffix}`, 1, redis.print);
-          msg.channel.sendMessage(`syncing database on machine ${suffix}`);
-        }
+        redis.exists(`syncdb_${suffix}`, (err, reply) => {
+          if (reply == 1)
+            msg.channel.sendMessage(`database on machine ${suffix} is already syncing, please wait`);
+          else {
+            redis.set(`syncdb_${suffix}`, 1, redis.print);
+            msg.channel.sendMessage(`syncing database on machine ${suffix}`);
+          }
+        });
       }
 
     }
+  }
   },
   "syncbranch" : {
     usage: "[machine] [branch]",
