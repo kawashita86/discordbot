@@ -2,6 +2,7 @@ const Discord = require('discord.js');
 const client = new Discord.Client();
 const apiKey = process.env.apiKey;
 const port  = process.env.PORT || 80;
+const redis = require('redis').createClient(process.env.REDIS_URL);
 let Config = {};
 if(!Config.hasOwnProperty("commandPrefix")){
   Config.commandPrefix = '!';
@@ -23,6 +24,18 @@ let commands = {
     process: function(client,msg,suffix){
     }
   },
+  "unlock" : {
+    usage: "[key]",
+    description: "sync database on a given machine",
+    process: function(client,msg, suffix){
+      if(!suffix) {
+        msg.channel.sendMessage( `!syncdb unlock require a [key] arguments`);
+      } else {
+        redis.del(`${suffix}`);
+        msg.channel.sendMessage(`unlock key ${suffix}`);
+      }
+    }
+  },
   "syncdb" : {
     usage: "[machine]",
     description: "sync database on a given machine",
@@ -30,8 +43,14 @@ let commands = {
       if(!suffix) {
         msg.channel.sendMessage( `!syncdb command require a [server] arguments`);
       }
-      else  //get args list
-        msg.channel.sendMessage( `syncing database on machine ${suffix}`);
+      else {//get args list
+        if(redis.get(`syncdb_${suffix}`)) {
+          msg.channel.sendMessage(`database on machine ${suffix} is already syncing, please wait`);
+        } else {
+          redis.set(`syncdb_${suffix}`, 1, redis.print);
+          msg.channel.sendMessage(`syncing database on machine ${suffix}`);
+        }
+      }
 
     }
   },
