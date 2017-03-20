@@ -17,6 +17,29 @@ let commands = {
       }
     }
   },
+  "restart": {
+    usage: "[machine]",
+    description: "sets bot status to idle",
+    process: function(client,msg,suffix){
+    }
+  },
+  "syncdb" : {
+    usage: "[machine]",
+    description: "sync database on a given machine",
+    process: function(client,msg,suffix){
+      //get args list
+      msg.channel.sendMessage( `syncing database on machine ${suffix}`);
+
+    }
+  },
+  "syncbranch" : {
+    usage: "[machine] [branch]",
+    description: "sets bot status to idle",
+    process: function(client,msg,suffix){
+      let [machine, branch] = message.content.split(" ").slice(1);
+      msg.channel.sendMessage( `syncing database on machine ${machine} branch ${branch}`);
+    }
+  },
   "idle": {
     usage: "[status]",
     description: "sets bot status to idle",
