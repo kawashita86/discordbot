@@ -27,8 +27,11 @@ let commands = {
     usage: "[machine]",
     description: "sync database on a given machine",
     process: function(client,msg,suffix){
-      //get args list
-      msg.channel.sendMessage( `syncing database on machine ${suffix}`);
+      if(!suffix) {
+        msg.channel.sendMessage( `!syncdb command require a [server] arguments`);
+      }
+      else  //get args list
+        msg.channel.sendMessage( `syncing database on machine ${suffix}`);
 
     }
   },
@@ -36,8 +39,15 @@ let commands = {
     usage: "[machine] [branch]",
     description: "sets bot status to idle",
     process: function(client,msg,suffix){
-      let [machine, branch] = message.content.split(" ").slice(1);
-      msg.channel.sendMessage( `syncing database on machine ${machine} branch ${branch}`);
+      if(!suffix) {
+        msg.channel.sendMessage( `!syncbranch command require a [server] [branch] arguments`);
+      } else {
+        let [machine, branch] = msg.content.split(" ").slice(1);
+        if(!branch)
+          msg.channel.sendMessage( `!syncbranch command require a [branch] arguments`);
+
+        msg.channel.sendMessage(`syncing database on machine ${machine} branch ${branch}`);
+      }
     }
   },
   "idle": {
