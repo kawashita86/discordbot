@@ -9,6 +9,9 @@ client.on('ready', () => {
 client.on('message', message => {
   if (message.content === 'ping') {
   message.reply('pong');
+} else if (message.content === 'what is my avatar') {
+  // send the user's avatar URL
+  message.reply(message.author.avatarURL);
 }
 });
 
