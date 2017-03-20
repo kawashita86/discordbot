@@ -45,8 +45,8 @@ let commands = {
         let [machine, branch] = msg.content.split(" ").slice(1);
         if(!branch)
           msg.channel.sendMessage( `!syncbranch command require a [branch] arguments`);
-
-        msg.channel.sendMessage(`syncing database on machine ${machine} branch ${branch}`);
+        else
+          msg.channel.sendMessage(`syncing branch on machine ${machine} branch ${branch}`);
       }
     }
   },
