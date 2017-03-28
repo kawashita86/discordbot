@@ -3,7 +3,7 @@
 nbproject/private/
 build/
 nbbuild/
-dist/
+dist/*
 nbdist/
 .nb-gradle/
 ### Node template
@@ -110,3 +110,5 @@ com_crashlytics_export_strings.xml
 crashlytics.properties
 crashlytics-build.properties
 fabric.properties
+/env/*
+!/env/env.sample.json

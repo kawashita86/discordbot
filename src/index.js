@@ -1,11 +1,39 @@
+"use strict";
+import Permissions from './util/Permissions';
+let fs = require('fs');
+let path = require('path');
 const Discord = require('discord.js');
 const client = new Discord.Client();
-const apiKey = process.env.apiKey;
+let apiKey = process.env.apiKey;
 const port  = process.env.PORT || 80;
 const redis = require('redis').createClient(process.env.REDIS_URL);
+const task_directory = path.join(__dirname, "/tasks/");
+const task_folders = getDirectories(task_directory);
 let Config = {};
+let permissions = new Permissions();
 if(!Config.hasOwnProperty("commandPrefix")){
   Config.commandPrefix = '!';
+}
+
+redis.on("error", function (err) {
+  console.log("Error " + err);
+  redis.quit();
+});
+
+try{
+  let content = require(path.join(__dirname, "../env/env"));
+  apiKey = content.apiKey;
+}catch(e){
+  console.log('no env file found');
+}
+
+Config.apiKey = apiKey;
+
+
+try{
+  permissions.importPermission(require("./permissions"));
+} catch(e){
+  console.log('no permissions configuration set');
 }
 
 let commands = {
@@ -111,7 +139,23 @@ client.on('message', message =>
   checkMessageForCommand(message, false)
 );
 
-client.login(apiKey);
+client.on("messageUpdate", (oldMessage, newMessage) => {
+  checkMessageForCommand(newMessage,true);
+});
+
+function commandCount(){
+  return Object.keys(commands).length;
+}
+
+function addCommand (commandName, commandObject) {
+  try {
+    commands[commandName] = commandObject;
+  } catch (err) {
+    console.log(err);
+  }
+}
+
+client.login(Config.apiKey);
 
 function checkMessageForCommand(msg, isEdit) {
   //check if message is a command
@@ -138,4 +182,33 @@ function checkMessageForCommand(msg, isEdit) {
 
     }
   }
+}
+
+function loadTasks(){
+  let commandCount = 0;
+  for (let i = 0; i < task_folders.length; i++) {
+    let task;
+    try{
+      task = require(task_directory + task_folders[i])
+    } catch (err){
+      console.log("Improper setup of the '" + task_folders[i] +"' task. : " + err);
+    }
+    if (task){
+      if("commands" in task){
+        for (let j = 0; j < task.commands.length; j++) {
+          if (task.commands[j] in task){
+            addCommand(task.commands[j], task[task.commands[j]])
+            commandCount++;
+          }
+        }
+      }
+    }
+  }
+  console.log("Loaded " + commandCount() + " chat commands")
+}
+
+function getDirectories(srcpath) {
+  return fs.readdirSync(srcpath).filter(function(file) {
+    return fs.statSync(path.join(srcpath, file)).isDirectory();
+  });
 }
